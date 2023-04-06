@@ -18,7 +18,7 @@ const drawerWidth = 240;
 
 export default function Navbar() {
   return (
-    <Box sx={{display: 'flex'}}>
+    <Box sx={{display: 'flex', bgcolor: '#F2FFFF'}}>
       <CssBaseline />
       <AppBar position="fixed" sx={{width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px`}}>
         <Toolbar>
@@ -34,6 +34,7 @@ export default function Navbar() {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
+            bgcolor: '#F2FFFF',
           },
         }}
         variant="permanent"
@@ -63,7 +64,7 @@ export default function Navbar() {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{flexGrow: 1, bgcolor: 'background.default', p: 3}}>
+      <Box component="main" sx={{flexGrow: 1, bgcolor: '#F2F2F2', p: 3}}>
         <Toolbar />
         <Typography paragraph>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
