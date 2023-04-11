@@ -7,23 +7,99 @@ import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
+import axios from 'axios';
+import CollapseNavbars from './CollapseNavbars';
+import {CircularProgress} from '@mui/material';
+import {useDispatch, useSelector} from 'react-redux';
+import {addData} from 'config/action';
+import parse from 'html-react-parser';
+import styled from 'styled-components';
+
+const Wrapper = styled.div`
+  padding: 20px;
+  border: 2px solid black;
+  width: 100%;
+  height: 31em;
+  background-color: white;
+`;
 
 const drawerWidth = 240;
 
 export default function Navbar() {
+  const [Files, setFiles] = React.useState([]);
+  const [SubFiles, setSubFiles] = React.useState(null);
+  const [isLoading, setisLoading] = React.useState(true);
+  const [selected, setSelected] = React.useState(null);
+  const [selectedCollapse, setSelectedCollapse] = React.useState(null);
+
+  console.log(process.env);
+
+  React.useEffect(() => {
+    axios.get(`${process.env.REACT_APP_BACKEND_URL}/getFiles`).then((res) => {
+      console.log(res);
+      const result = [];
+      const resultSubFile = {};
+      res?.data?.folders.map((folder) => {
+        result.push(folder.folderName);
+        resultSubFile[folder.folderName] = [];
+      });
+      res?.data?.images?.map((item) => {
+        resultSubFile[item.folderName].push({
+          fileName: item.fileName,
+          name: item.name,
+          data: item.data,
+          type: item.type,
+          id: item.id,
+        });
+      });
+      setSubFiles(resultSubFile);
+      setFiles(result);
+      setisLoading(false);
+    });
+  }, []);
+
+  // React.useEffect(() => {
+  //   console.log(selected);
+  // }, [selected]);
+
+  const dispatch = useDispatch();
+  // Selects the state value from the store.
+  const todo = useSelector((state) => state);
+  // Dispatches action to add the data
+
+  //@ts-ignore
+  const handleAddData = () => dispatch(addData());
+
+  const base64String = btoa(String.fromCharCode(...new Uint8Array(selected?.data?.data)));
+
+  console.log(base64String);
+
+  //console.log((selected?.data?.data).toString());
+
+  //const Strings = new FileReader().readAsText(selected?.data);
+
+  //console.log(Strings);
+
+  //@ts-ignore
+  if (todo?.data?.files === null) {
+    handleAddData();
+  }
+
   return (
     <Box sx={{display: 'flex', bgcolor: '#F2FFFF'}}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px`}}>
+      <AppBar
+        position="fixed"
+        sx={{
+          backgroundColor: '#F2F2E4',
+          color: 'black',
+          width: `calc(100% - ${drawerWidth}px)`,
+          ml: `${drawerWidth}px`,
+        }}
+      >
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
-            Permanent drawer
+            Files
           </Typography>
         </Toolbar>
       </AppBar>
@@ -41,51 +117,41 @@ export default function Navbar() {
         anchor="left"
       >
         <Toolbar />
-        <Divider />
-        <List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {['All mail', 'Trash', 'Spam'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        {isLoading ? (
+          <CircularProgress style={{marginLeft: '42%'}} />
+        ) : (
+          <>
+            <Divider />
+            <List>
+              {Files.map((text, index) => (
+                <CollapseNavbars
+                  key={index}
+                  name={text}
+                  childComponent={SubFiles[text]}
+                  setSelected={setSelected}
+                  selectedCollapse={selectedCollapse}
+                  setSelectedCollapse={setSelectedCollapse}
+                />
+              ))}
+            </List>
+            <Divider />
+          </>
+        )}
       </Drawer>
-      <Box component="main" sx={{flexGrow: 1, bgcolor: '#F2F2F2', p: 3}}>
+      <Box component="main" sx={{flexGrow: 1, bgcolor: '#F2F2F2', p: 3, minHeight: '39em'}}>
         <Toolbar />
-        <Typography paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Rhoncus dolor purus non enim praesent elementum facilisis leo vel. Risus at ultrices mi tempus
-          imperdiet. Semper risus in hendrerit gravida rutrum quisque non tellus. Convallis convallis tellus id interdum
-          velit laoreet id donec ultrices. Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl suscipit
-          adipiscing bibendum est ultricies integer quis. Cursus euismod quis viverra nibh cras. Metus vulputate eu
-          scelerisque felis imperdiet proin fermentum leo. Mauris commodo quis imperdiet massa tincidunt. Cras tincidunt
-          lobortis feugiat vivamus at augue. At augue eget arcu dictum varius duis at consectetur lorem. Velit sed
-          ullamcorper morbi tincidunt. Lorem donec massa sapien faucibus et molestie ac.
-        </Typography>
-        <Typography paragraph>
-          Consequat mauris nunc congue nisi vitae suscipit. Fringilla est ullamcorper eget nulla facilisi etiam
-          dignissim diam. Pulvinar elementum integer enim neque volutpat ac tincidunt. Ornare suspendisse sed nisi lacus
-          sed viverra tellus. Purus sit amet volutpat consequat mauris. Elementum eu facilisis sed odio morbi. Euismod
-          lacinia at quis risus sed vulputate odio. Morbi tincidunt ornare massa eget egestas purus viverra accumsan in.
-          In hendrerit gravida rutrum quisque non tellus orci ac. Pellentesque nec nam aliquam sem et tortor. Habitant
-          morbi tristique senectus et. Adipiscing elit duis tristique sollicitudin nibh sit. Ornare aenean euismod
-          elementum nisi quis eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla posuere
-          sollicitudin aliquam ultrices sagittis orci a.
-        </Typography>
+        <Wrapper>
+          <h1>{selected?.fileName}</h1>
+          {selected !== null && selected?.type === 'text/plain' && (
+            <>
+              <p>{selected?.data}</p>
+            </>
+          )}
+          {selected !== null && selected?.type === 'text/html' && <>{parse(selected.data)}</>}
+          {selected !== null && selected?.type !== 'text/html' && selected?.type !== 'text/plain' && (
+            <img src={`data:image/png;base64,${base64String}`} alt="" style={{width: '100%', height: '23em'}} />
+          )}
+        </Wrapper>
       </Box>
     </Box>
   );
